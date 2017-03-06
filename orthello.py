@@ -103,8 +103,53 @@ def calculateScore(board):
     else:
         print("Tie Game")
 
+def aiMove(board, aiColor):
+    playerConfirm('AI is about to move.')
+    # Make a move (currently just takes first open spot)
+    move_made = False
+    for i in range(0, 8):
+        for j in range(0, 8):
+            if board[i][j] == ' ':
+                board[i][j] = aiColor
+                print('AI moves to ' + chr(65 + i) + str(j + 1))
+                move_made = True
+                break
+        if move_made == True:
+            break
 
+    # No move can be made
+    if move_made == False:
+        print('AI cannot make a move.')
 
+    appendToArchive(boardsArchive, board)
+    return board
+
+def playerMove(board, playerColor):
+    move = input('Player, please make a move.')
+    col = ord(move[:1]) - 65
+    row = int(move[1:]) - 1
+    while(board[col][row] != ' '):
+        move = input('Not valid. Please make another move.')
+        col = ord(move[:1]) - 65
+        row = int(move[1:]) - 1
+    board[col][row] = playerColor
+    print('Player moves to ' + str(move))
+    appendToArchive(boardsArchive, board)
+    return board
+
+def playerConfirm(message):
+     ans = input(str(message) + ' Enter \'y\' to confirm, \'quit\' to end the game.')
+     while ans != 'y':
+         if ans == 'quit':
+             sys.exit()
+         ans = input(str(message) + ' Enter \'y\' to confirm, \'quit\' to end the game.')
+
+def moveExists(board):
+    for i in range(0, 8):
+        for j in range(0,8):
+            if board[i][j] == ' ':
+                return True
+    
 def main():
     print('Welcome to Othello!')
     mainBoard = getNewBoard()   #array of arrays(matrix)
@@ -114,10 +159,32 @@ def main():
     drawBoard(mainBoard)
     
     mainBoard = changeBoard(mainBoard)
-    playerColor = askColor()
+    playerColor = askColor().upper()
     
     #beginTimer(10)  #10 seconds to make a move
     #GAMEPLAY HERE
+    playerTurn = True
+    if(playerColor == 'W'):
+        playerTurn = False
+    while(moveExists(mainBoard) == True):
+        if(playerTurn == False):
+            mainBoard = aiMove(mainBoard, 'B')
+        else:
+            mainBoard = playerMove(mainBoard, playerColor)
+        
+        displayScore(mainBoard)
+        # need to display highlighted board here
+        drawBoard(mainBoard)
+
+        if(playerTurn == False):
+            playerConfirm('Confirm AI move?')
+        else:
+            playerConfirm('Confirm Player move?')
+        # then update flipped squares here
+        displayScore(mainBoard)
+        drawBoard(mainBoard)
+        playerTurn = not playerTurn
+            
     
     displayScore(mainBoard)
     calculateScore(mainBoard)
